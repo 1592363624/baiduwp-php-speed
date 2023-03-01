@@ -127,8 +127,9 @@ Function
 				<ul class="navbar-nav">
 					<li class="nav-item"><a class="nav-link" href="./"><?php echo Language["IndexButton"]; ?></a></li>
 					<li class="nav-item"><a class="nav-link" href="?help" target="_blank"><?php echo Language["HelpButton"]; ?></a></li>
-					<li class="nav-item"><a class="nav-link" href="?usersettings"><?php echo Language["UserSettings"]; ?></a></li>
-					<li class="nav-item"><a class="nav-link" href="https://github.com/yuantuo666/baiduwp-php" target="_blank">Github</a></li>
+					<!-- <li class="nav-item"><a class="nav-link" href="?usersettings"><?php echo Language["UserSettings"]; ?></a></li> -->
+					<li class="nav-item"><a class="nav-link" href="http://wpa.qq.com/msgrd?v=3&uin=1592363624&site=qq&menu=yes" target="_blank">QQ：1592363624</a></li>
+					<li class="nav-item"><a class="nav-link" href="./settings.php" target="_blank">=.=</a></li>
 				</ul>
 			</div>
 		</div>
