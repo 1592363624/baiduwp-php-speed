@@ -10,7 +10,7 @@
  * @link https://space.bilibili.com/88197958
  *
  */
-require_once("./common/invalidCheck.php");
+require("./common/invalidCheck.php");
 ?>
 <style>
 	.card {

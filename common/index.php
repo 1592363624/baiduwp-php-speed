@@ -10,7 +10,7 @@
  * @link https://space.bilibili.com/88197958
  *
  */
-require_once("./common/invalidCheck.php");
+require("./common/invalidCheck.php");
 ?>
 
 <div class="col-lg-6 col-md-9 mx-auto mb-5 input-card">
@@ -75,7 +75,7 @@ require_once("./common/invalidCheck.php");
 	<?php } ?>
 	<script>
 		// check if this site is in black list
-		let blacklist = ["www.pojiewo.com", "bd.fkxz.cn"];
+		let blacklist = ["www.pojiewo.com", "bd.fkxz.cn", "pan.10zv.com"];
 		if (blacklist.includes(document.domain)) {
 			alert("当前网站在 baiduwp-php 项目的黑名单中，即将跳转到项目 Github 仓库");
 			window.location.href = "https://github.com/yuantuo666/baiduwp-php";

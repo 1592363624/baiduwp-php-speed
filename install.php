@@ -14,6 +14,18 @@
  *
  */
 define('init', true);
+if (version_compare(PHP_VERSION, '7.0.0', '<')) {
+	http_response_code(503);
+	header('Content-Type: text/plain; charset=utf-8');
+	header('Refresh: 5;url=https://www.php.net/downloads.php');
+	die("HTTP 503 服务不可用！\r\nPHP 版本过低！无法正常运行程序！\r\n请安装 7.0.0 或以上版本的 PHP！\r\n将在五秒内跳转到 PHP 官方下载页面！");
+}
+if (!(file_exists('functions.php') && file_exists('language.php'))) {
+	http_response_code(503);
+	header('Content-Type: text/plain; charset=utf-8');
+	header('Refresh: 5;url=https://github.com/yuantuo666/baiduwp-php');
+	die("HTTP 503 服务不可用！\r\n缺少相关配置和定义文件！无法正常运行程序！\r\n请重新 Clone 项目并进入此页面安装！\r\n将在五秒内跳转到 GitHub 储存库！");
+}
 if (file_exists('config.php')) {
 	// 如果已经安装过一次，必须管理员登录
 	session_start();
@@ -381,7 +393,7 @@ header('X-UA-Compatible: IE=edge,chrome=1');
 							<label class="col-sm-2 col-form-label">超级会员账号BDUSS</label>
 							<div class="col-sm-10">
 								<input class="form-control" name="SVIP_BDUSS" placeholder="例：W4tanVHelU2VGpxb**********0ZTZlUm1saEVtYnpTWjByfmxheWwxRFRtNlphQVFBQUFBJCQAAAAAAAAAAA……" value="<?php echo $SVIP_BDUSS; ?>">
-								<small class="form-text">用来获取文件高速下载地址，必须为SVIP账号，否则将获取到限速地址。</small>
+								<small class="form-text">用来获取文件告诉下载地址，必须为SVIP账号，否则将获取到限速地址。</small>
 							</div>
 						</div>
 						<div class="form-group row">
