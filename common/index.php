@@ -34,7 +34,7 @@ require("./common/invalidCheck.php");
 						}
 					}
 					echo $return;
-				} // 密码
+				} // 密码验证
 				?>
 				<button type="submit" class="mt-4 mb-3 btn btn-success btn-block"><?php echo Language["Submit"]; ?></button>
 			</form>

@@ -129,6 +129,8 @@ Function
 					<li class="nav-item"><a class="nav-link" href="?help" target="_blank"><?php echo Language["HelpButton"]; ?></a></li>
 					<!-- <li class="nav-item"><a class="nav-link" href="?usersettings"><?php echo Language["UserSettings"]; ?></a></li> -->
 					<li class="nav-item"><a class="nav-link" href="http://wpa.qq.com/msgrd?v=3&uin=1592363624&site=qq&menu=yes" target="_blank">QQ：1592363624</a></li>
+					<li class="nav-item"><a class="nav-link" href="http://52shell.ltd" target="_blank">个人官网主页</a></li>
+					<li class="nav-item"><a class="nav-link" href="https://jq.qq.com/?_wv=1027&k=e4NVHbbO" target="_blank">交流群</a></li>
 					<li class="nav-item"><a class="nav-link" href="./settings.php" target="_blank">=.=</a></li>
 				</ul>
 			</div>
