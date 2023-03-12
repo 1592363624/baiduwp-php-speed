@@ -125,7 +125,8 @@ if (DEBUG) {
                     <li class="nav-item"><a class="nav-link" href="?help"
                             target="_blank"><?php echo Language["HelpButton"]; ?></a></li>
                     <!-- <li class="nav-item"><a class="nav-link" href="?usersettings"><?php echo Language["UserSettings"]; ?></a></li> -->
-                    <!-- <li class="nav-item"><a class="nav-link" href="https://github.com/yuantuo666/baiduwp-php" target="_blank">Github</a></li> -->
+                    <li class="nav-item"><a class="nav-link" href="https://pd.qq.com/s/b78d62q82"
+                            target="_blank">QQ频道</a></li>
                 </ul>
             </div>
         </div>
