@@ -14,18 +14,6 @@
  *
  */
 define('init', true);
-if (version_compare(PHP_VERSION, '7.0.0', '<')) {
-	http_response_code(503);
-	header('Content-Type: text/plain; charset=utf-8');
-	header('Refresh: 5;url=https://www.php.net/downloads.php');
-	die("HTTP 503 服务不可用！\r\nPHP 版本过低！无法正常运行程序！\r\n请安装 7.0.0 或以上版本的 PHP！\r\n将在五秒内跳转到 PHP 官方下载页面！");
-}
-if (!(file_exists('functions.php') && file_exists('language.php'))) {
-	http_response_code(503);
-	header('Content-Type: text/plain; charset=utf-8');
-	header('Refresh: 5;url=https://github.com/yuantuo666/baiduwp-php');
-	die("HTTP 503 服务不可用！\r\n缺少相关配置和定义文件！无法正常运行程序！\r\n请重新 Clone 项目并进入此页面安装！\r\n将在五秒内跳转到 GitHub 储存库！");
-}
 if (file_exists('config.php')) {
 	// 如果已经安装过一次，必须管理员登录
 	session_start();
@@ -92,53 +80,8 @@ header('X-UA-Compatible: IE=edge,chrome=1');
 				};
 			}
 		}
-
-		getAPI('CheckUpdate').then(function(response) {
-			if (response.success) {
-				console.log('检查更新信息：');
-				console.log(response);
-				const data = response.data;
-				if (data.code === 0) {
-					if (data.have_update) {
-						const div = document.createElement('div');
-						div.id = 'CheckUpdate';
-						div.style.margin = '0.3rem 1rem';
-						div.style.display = 'none';
-						div.innerHTML = `Baiduwp-PHP 项目有新的版本：${data.version}（${data.isPreRelease ? '此版本为预发行版本，' : ''}当前版本为${data.now_version}）！请联系站长更新！
-					&nbsp; <a href="${data.page_url}" target="_blank">发行版页面</a> &nbsp; <a href="${data.file_url}" target="_blank">下载程序文件</a><div style="float: right;"><a href="javascript:SetUpdateTip(false);">不再提示</a></div>`;
-						document.body.insertAdjacentElement('beforeBegin', div);
-						if (localStorage.getItem('UpdateTip') != "false")
-							$('#CheckUpdate').show(1500);
-					}
-				} else if (data.code === 2) {
-					const div = document.createElement('div');
-					div.id = 'CheckUpdate';
-					div.style.margin = '0.3rem 1rem';
-					div.style.display = 'none';
-					div.innerHTML = `Baiduwp-PHP 项目版本异常！当前版本：${data.now_version}，项目最新版本为：${data.version}${data.isPreRelease ? '（预发行版本）' : ''}！
-				&nbsp; <a href="${data.page_url}" target="_blank">发行版页面</a> &nbsp; <a href="${data.file_url}" target="_blank">下载程序文件</a><div style="float: right;"><a href="javascript:SetUpdateTip(false);">不再提示</a></div>`;
-					document.body.insertAdjacentElement('beforeBegin', div);
-					if (localStorage.getItem('UpdateTip') != "false")
-						$('#CheckUpdate').show(1500);
-				} else if (data.code === 1) {
-					console.log('服务器获取更新失败！详细信息：');
-					console.log(data);
-				} else {
-					console.log('服务器获取更新失败，且错误码不在支持列表中！详细信息：');
-					console.log(data);
-				}
-			} else {
-				console.log('检查更新失败！详细信息：');
-				console.log(response);
-			}
-		});
-
-		function SetUpdateTip(value) {
-			localStorage.setItem('UpdateTip', `${value}`); // 不知为啥，只能用string类型
-			if (value) $('#CheckUpdate').show(2000);
-			else $('#CheckUpdate').hide(2000);
-		}
 	</script>
+	<script src="static/ready.js?r=<?php echo random_int(1000, 9999); ?>"></script>
 </head>
 
 <body>
@@ -393,7 +336,7 @@ header('X-UA-Compatible: IE=edge,chrome=1');
 							<label class="col-sm-2 col-form-label">超级会员账号BDUSS</label>
 							<div class="col-sm-10">
 								<input class="form-control" name="SVIP_BDUSS" placeholder="例：W4tanVHelU2VGpxb**********0ZTZlUm1saEVtYnpTWjByfmxheWwxRFRtNlphQVFBQUFBJCQAAAAAAAAAAA……" value="<?php echo $SVIP_BDUSS; ?>">
-								<small class="form-text">用来获取文件告诉下载地址，必须为SVIP账号，否则将获取到限速地址。</small>
+								<small class="form-text">用来获取文件高速下载地址，必须为SVIP账号，否则将获取到限速地址。</small>
 							</div>
 						</div>
 						<div class="form-group row">
@@ -627,10 +570,23 @@ header('X-UA-Compatible: IE=edge,chrome=1');
 								Swal.showLoading();
 								USING_DB = $("input[name='USING_DB']:checked").val();
 								ADMIN_PASSWORDLength = $("input[name='ADMIN_PASSWORD']").val().length;
-								Cookie = $("input[name='Cookie']").val().length;
+								Cookie = $("input[name='Cookie']").val();
+								BDUSS = $("input[name='BDUSS']").val();
+								STOKEN = $("input[name='STOKEN']").val();
+								SVIP_BDUSS = $("input[name='SVIP_BDUSS']").val();
+								SVIP_STOKEN = $("input[name='SVIP_STOKEN']").val();
 
-								if (Cookie < 6) {
+
+								if (Cookie.length < 6) {
 									Swal.fire("普通账号完整 Cookie 设置错误", "因百度对 API 进行修改，更新版本后需要设置完整的 Cookie 参数，可通过 网页版抓包 获取。", "warning");
+									return 0;
+								}
+								if (BDUSS.length < 6 || STOKEN.length < 6) {
+									Swal.fire("普通账号 BDUSS 或 STOKEN 设置错误", "请设置普通账号的 BDUSS 和 STOKEN 参数，可通过 网页版抓包 获取。", "warning");
+									return 0;
+								}
+								if (SVIP_BDUSS.length < 6 || SVIP_STOKEN.length < 6) {
+									Swal.fire("SVIP账号 BDUSS 或 STOKEN 设置错误", "请设置 SVIP 账号的 BDUSS 和 STOKEN 参数，可通过 网页版抓包 获取。", "warning");
 									return 0;
 								}
 								if (ADMIN_PASSWORDLength < 6) {
