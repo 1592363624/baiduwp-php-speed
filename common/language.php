@@ -126,17 +126,6 @@ $lang = [
 							<ol>
 								<li>设置 -> 通用设置 -> 浏览器标识 -> 移动版浏览器标识 -> 自定义 -><br />填入 <b>LogStatistic</b></li>
 							</ol>
-							<div id="Copyright"><a class="anchor" href="#Copyright"></a>
-								<h4>关于此项目</h4>
-							</div>
-							<ol>
-								<li>本项目与PanDownload无关。</li>
-								<li>本项目仅以学习为目的，不得用于其他用途。</li>
-								<li>当前项目版本：' . programVersion . '</li>
-								<li><a href="https://github.com/yuantuo666/baiduwp-php" target="_blank">Github仓库</a></li>
-								<li>项目作者：<a href="https://imwcr.cn/" target="_blank">Yuan_Tuo</a></li>
-								<li>项目协作者：<a href="https://lcwebsite.cn/" target="_blank">LC</a></li>
-							</ol>
 						</section>
 						<script>
 							$(".anchor").attr("target", "_self").prepend(`<svg viewBox="0 0 16 16" version="1.1" width="16" height="16"><path fill-rule="evenodd" d="M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5
