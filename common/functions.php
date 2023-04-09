@@ -49,6 +49,14 @@ function head(string $url, array $header)
 	curl_setopt($ch, CURLOPT_NOBODY, true); // 只要响应头
 	curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
 	$response = curl_exec($ch);
+	if ($response === false) {
+		// get error msg
+		$error = curl_error($ch);
+		// close curl
+		curl_close($ch);
+		// return error msg
+		return $error;
+	}
 	$header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE); // 获得响应头大小
 	$result = substr($response, 0, $header_size); // 根据头大小获取头信息
 	curl_close($ch);
@@ -56,70 +64,37 @@ function head(string $url, array $header)
 }
 function getSubstr(string $str, string $leftStr, string $rightStr)
 {
-	$left = strpos($str, $leftStr); // echo '左边:'.$left;
-	$right = strpos($str, $rightStr, $left); // echo '<br>右边:'.$right;
-	if ($left < 0 || $right < $left) return '';
+	$left = strpos($str, $leftStr);
+	if ($left === false) return "";
 	$left += strlen($leftStr);
+	$right = strpos($str, $rightStr, $left);
+	if ($right === false) return "";
 	return substr($str, $left, $right - $left);
 }
 function formatSize(float $size, int $times = 0)
-{ // 格式化size显示 PHP版本过老会报错
-	if ($size > 1024) {
+{
+	$unit = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
+	if ($size >= 1024) {
 		$size /= 1024;
-		return formatSize($size, $times + 1); // 递归处理
+		$times++;
+		return formatSize($size, $times);
 	} else {
-		switch ($times) {
-			case '0':
-				$unit = ($size == 1) ? 'Byte' : 'Bytes';
-				break;
-			case '1':
-				$unit = 'KB';
-				break;
-			case '2':
-				$unit = 'MB';
-				break;
-			case '3':
-				$unit = 'GB';
-				break;
-			case '4':
-				$unit = 'TB';
-				break;
-			case '5':
-				$unit = 'PB';
-				break;
-			case '6':
-				$unit = 'EB';
-				break;
-			case '7':
-				$unit = 'ZB';
-				break;
-			default:
-				$unit = '单位未知';
-		}
-		return sprintf('%.2f', $size) . $unit;
+		return round($size, 2) . $unit[$times];
 	}
 }
-function CheckPassword(bool $IsReturnBool = false)
+function CheckPassword()
 {
 	if (!IsCheckPassword) {
 		return true;
 	}
-	$return = false;
-	if (!isset($_POST["Password"])) { // 若未传入 Password
-		if (isset($_SESSION["Password"]) && $_SESSION["Password"] === Password) { // 若 SESSION 中密码正确
-			$return = true;
-		}
-	} else if ($_POST["Password"] === Password) { // 若传入密码正确
-		$_SESSION['Password'] = $_POST["Password"]; // 设置 SESSION
-		$return = true;
+	if (($_SESSION["Password"] ?? "") === Password) { // 若 SESSION 中密码正确
+		return true;
 	}
-	if ($IsReturnBool) { // 若 $IsReturnBool 为 true 则只返回 true/false，不执行 dl_error
-		return $return;
+	if (($_POST["password"] ?? "") === Password) { // 若传入密码正确
+		$_SESSION['Password'] = $_POST["password"]; // 设置 SESSION
+		return true;
 	}
-	if (!$return) { // 若 $IsReturnBool 为 false 且验证失败，则执行 dl_error
-		dl_error("密码错误", "请检查你输入的密码！");
-		die();
-	}
+	return false;
 }
 function GetSign(string $surl = "", string $share_id = "", string $uk = "")
 {
@@ -143,43 +118,15 @@ function GetSign(string $surl = "", string $share_id = "", string $uk = "")
 		return [-1, $result["show_msg"] ?? "", ""];
 	}
 }
-function FileInfo(string $filename, float $size, string $md5, int $server_ctime)
-{ // 输出 HTML 字符串
-	return '<p class="card-text" id="filename" >文件名：<b>' . $filename .
-		'</b></p><p class="card-text">文件大小：<b>' . formatSize($size) .
-		'</b></p><p class="card-text">文件MD5：<b>' . $md5 .
-		'</b></p><p class="card-text">上传时间：<b>' . date("Y年m月d日 H:i:s", $server_ctime) . '</b></p>';
-}
-function getDlink(string $fs_id, string $timestamp, string $sign, string $randsk, string $share_id, string $uk, int $app_id = 250528)
-{ // 获取下载链接
-	$url = 'https://pan.baidu.com/api/sharedownload?app_id=' . $app_id . '&channel=chunlei&clienttype=12&sign=' . $sign . '&timestamp=' . $timestamp . '&web=1'; // 获取下载链接
-
-	if (strstr($randsk, "%") != false) $randsk = urldecode($randsk);
-	$data = "encrypt=0" . "&extra=" . urlencode('{"sekey":"' . $randsk . '"}') . "&fid_list=[$fs_id]" . "&primaryid=$share_id" . "&uk=$uk" . "&product=share&type=nolimit";
-	$header = array(
-		"User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.514.1919.810 Safari/537.36",
-		"Cookie: " . Cookie,
-		"Referer: https://pan.baidu.com/disk/home"
-	);
-	$result = json_decode(post($url, $data, $header), true);
-	if (DEBUG) {
-		echo '<script>console.log("getDlink():", ' . json_encode($result) . ');</script>';
-	}
-	return $result;
-	// 没有 referer 就 112, 没有 sekey 参数就 118, -20出现验证码
-}
 function dl_error(string $title, string $content, bool $jumptip = false)
 {
 	if ($jumptip) {
 		$content .= '<br>1. 请打开调试模式：将 config.php 文件中 DEBUG 的 false 修改为 true。<br>2. 刷新该页面并将错误信息以议题的形式提交到<a href="https://github.com/yuantuo666/baiduwp-php/issues">GitHub项目</a>。';
 	}
-	if (Language["LanguageName"] != "Chinese") {
-		$content = "To know more about it, you can translate the information following.<br />Raw Title:$title<br />Raw Message:$content";
-		$title = "An error happened.";
-	}
 	echo '<div class="row justify-content-center"><div class="col-md-7 col-sm-8 col-11"><div class="alert alert-danger" role="alert">
 	<h5 class="alert-heading">' . $title . '</h5><hr /><p class="card-text">' . $content;
-	echo '</p></div></div></div>'; // 仅仅弹出提示框，并不结束进程
+	echo '</p></div></div></div>';
+	die();
 }
 function connectdb(bool $isAPI = false)
 {
@@ -201,7 +148,6 @@ function connectdb(bool $isAPI = false)
 			exit;
 		} else {
 			dl_error("服务器错误", "数据库连接失败：" . mysqli_connect_error());
-			exit;
 		}
 	}
 	$GLOBALS['conn'] = $conn;
@@ -209,20 +155,6 @@ function connectdb(bool $isAPI = false)
 	mysqli_query($conn, "set sql_mode = ''");
 	mysqli_query($conn, "set character set 'utf8'");
 	mysqli_query($conn, "set names 'utf8'");
-}
-function GetList(string $Shorturl, string $Dir, bool $IsRoot, string $Password, int $Page = 1)
-{
-	$Url = 'https://pan.baidu.com/share/wxlist?channel=weixin&version=2.2.2&clienttype=25&web=1';
-
-	$Root = ($IsRoot) ? "1" : "0";
-	$Dir = urlencode($Dir);
-	$Data = "shorturl=$Shorturl&dir=$Dir&root=$Root&pwd=$Password&page=$Page&num=1000&order=time";
-	$header = ["User-Agent: netdisk", "Cookie: BDUSS=" . BDUSS, "Referer: https://pan.baidu.com/disk/home"];
-	$result = json_decode(post($Url, $Data, $header), true);
-	if (DEBUG) {
-		echo '<script>console.log("GetList():");console.log(' . json_encode($result) . ');</script>';
-	}
-	return $result;
 }
 $getConstant = function (string $name) {
 	return constant($name);
@@ -233,6 +165,7 @@ $getConstant = function (string $name) {
  */
 function EchoInfo(int $error, array $Result)
 {
+	header('Content-Type: application/json; charset=utf-8');
 	$ReturnArray = array("error" => $error);
 	$ReturnArray += $Result;
 	echo json_encode($ReturnArray);
@@ -275,7 +208,7 @@ function GetSvipTablePage(string $page)
 	$dbtable = $GLOBALS['dbtable'];
 	$AllRow = "";
 	$StartNum = ((int)$page - 1) * $EachPageNum;
-	$sql = "SELECT * FROM `" . $dbtable . "_svip` ORDER BY `id` DESC LIMIT $StartNum,$EachPageNum";
+	$sql = "SELECT * FROM `{$dbtable}_svip` ORDER BY `id` DESC LIMIT $StartNum,$EachPageNum";
 	$mysql_query = mysqli_query($conn, $sql);
 	while ($Result = mysqli_fetch_assoc($mysql_query)) {
 		// 存在数据
@@ -307,7 +240,7 @@ function GetIPTablePage(string $page)
 	$dbtable = $GLOBALS['dbtable'];
 	$AllRow = "";
 	$StartNum = ((int)$page - 1) * $EachPageNum;
-	$sql = "SELECT * FROM `" . $dbtable . "_ip` ORDER BY `id` DESC LIMIT $StartNum,$EachPageNum";
+	$sql = "SELECT * FROM `{$dbtable}_ip` ORDER BY `id` DESC LIMIT $StartNum,$EachPageNum";
 	$mysql_query = mysqli_query($conn, $sql);
 	while ($Result = mysqli_fetch_assoc($mysql_query)) {
 		// 存在数据
@@ -339,7 +272,7 @@ function GetDBBDUSS()
 		case 1:
 			//模式1：用到废为止
 			// 时间倒序输出第一项未被限速账号
-			$sql = "SELECT `id`,`svip_bduss`,`svip_stoken` FROM `" . $dbtable . "_svip` WHERE `state`!=-1 ORDER BY `is_using` DESC,`id` DESC LIMIT 0,1";
+			$sql = "SELECT `id`,`svip_bduss`,`svip_stoken` FROM `{$dbtable}_svip` WHERE `state`!=-1 ORDER BY `is_using` DESC,`id` DESC LIMIT 0,1";
 			$Result = mysqli_query($conn, $sql);
 			if ($Result =  mysqli_fetch_assoc($Result)) {
 				$SVIP_BDUSS = $Result["svip_bduss"];
@@ -355,7 +288,7 @@ function GetDBBDUSS()
 		case 2:
 			//模式2：轮番上
 			// 时间顺序输出第一项未被限速账号
-			$sql = "SELECT `id`,`svip_bduss`,`svip_stoken` FROM `" . $dbtable . "_svip` WHERE `state`!=-1 ORDER BY `is_using` ASC,`id` DESC LIMIT 0,1";
+			$sql = "SELECT `id`,`svip_bduss`,`svip_stoken` FROM `{$dbtable}_svip` WHERE `state`!=-1 ORDER BY `is_using` ASC,`id` DESC LIMIT 0,1";
 
 			$Result = mysqli_query($conn, $sql);
 			if ($Result =  mysqli_fetch_assoc($Result)) {
@@ -366,7 +299,7 @@ function GetDBBDUSS()
 				// 开始处理
 				// 这里最新的时间表示可用账号，按顺序排序
 				$is_using = date("Y-m-d H:i:s");
-				$sql = "UPDATE `" . $dbtable . "_svip` SET `is_using`= '$is_using' WHERE `id`=$id";
+				$sql = "UPDATE `{$dbtable}_svip` SET `is_using`= '$is_using' WHERE `id`=$id";
 				$mysql_query = mysqli_query($conn, $sql);
 				if ($mysql_query == false) {
 					// 失败 但可继续解析
@@ -382,7 +315,7 @@ function GetDBBDUSS()
 		case 3:
 			//模式3：手动切换，不管限速
 			// 时间倒序输出第一项账号，不管限速
-			$sql = "SELECT `id`,`svip_bduss`,`svip_stoken` FROM `" . $dbtable . "_svip` ORDER BY `is_using` DESC,`id` DESC LIMIT 0,1";
+			$sql = "SELECT `id`,`svip_bduss`,`svip_stoken` FROM `{$dbtable}_svip` ORDER BY `is_using` DESC,`id` DESC LIMIT 0,1";
 			$Result = mysqli_query($conn, $sql);
 			if ($Result =  mysqli_fetch_assoc($Result)) {
 				$SVIP_BDUSS = $Result["svip_bduss"];
@@ -398,7 +331,7 @@ function GetDBBDUSS()
 		case 4:
 			//模式4：轮番上(无视限速)
 			// 时间顺序输出第一项限速账号
-			$sql = "SELECT `id`,`svip_bduss`,`svip_stoken` FROM `" . $dbtable . "_svip` ORDER BY `is_using` ASC,`id` DESC LIMIT 0,1";
+			$sql = "SELECT `id`,`svip_bduss`,`svip_stoken` FROM `{$dbtable}_svip` ORDER BY `is_using` ASC,`id` DESC LIMIT 0,1";
 
 			$Result = mysqli_query($conn, $sql);
 			if ($Result =  mysqli_fetch_assoc($Result)) {
@@ -409,7 +342,7 @@ function GetDBBDUSS()
 				// 开始处理
 				// 这里最新的时间表示可用账号，按顺序排序
 				$is_using = date("Y-m-d H:i:s");
-				$sql = "UPDATE `" . $dbtable . "_svip` SET `is_using`= '$is_using' WHERE `id`=$id";
+				$sql = "UPDATE `{$dbtable}_svip` SET `is_using`= '$is_using' WHERE `id`=$id";
 				$mysql_query = mysqli_query($conn, $sql);
 				if ($mysql_query == false) {
 					// 失败 但可继续解析
@@ -744,4 +677,18 @@ function decodeSceKey($seckey)
 	$seckey = str_replace("~", "=", $seckey);
 	$seckey = str_replace("_", "/", $seckey);
 	return $seckey;
+}
+function decryptMd5($md5)
+{
+	if (preg_match('/^.{9}[a-f0-9]/', $md5) && ctype_xdigit(substr($md5, 9, 1))) {
+		return $md5;
+	}
+	$key = dechex(ord(substr($md5, 9, 1)) - ord('g'));
+	$key2 = substr($md5, 0, 9) . $key . substr($md5, 10, strlen($md5));
+	$key3 = "";
+	for ($a = 0; $a < strlen($key2); $a++) {
+		$key3 .= dechex(hexdec($key2[$a]) ^ (15 & $a));
+	}
+	$md5 = substr($key3, 8, 8) . substr($key3, 0, 8) . substr($key3, 24, 8) . substr($key3, 16, 8);
+	return $md5;
 }
